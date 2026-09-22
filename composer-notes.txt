@@ -1,0 +1,189 @@
+Aarav & Meera — digital wedding invitation (template)
+
+index.html is a complete, self-contained page. Open it through a local server,
+or upload this folder as-is to any static host (Netlify, Vercel, GitHub Pages,
+a plain web server). Keep index.html and the assets/ folder together.
+
+Opening index.html by double-clicking shows the paper and the cover, but the
+cut-outs will not load — relative asset paths need a server.
+
+
+THE FLOW
+  1. Cover     — the sealed envelope. Exactly one viewport, never scrolls.
+  2. Suite     — click the envelope and the flat-lay assembles underneath it.
+                 No navigation; the cover cross-fades away in place.
+  3. Countdown — scroll on. The olive-grove painting run full-bleed under a
+                 dark scrim, a live clock in cream, the names and the date,
+                 and a link back to the sealed envelope.
+
+  THE COUNTDOWN HAS THREE STATES, not one:
+    counting  days / hours / minutes / seconds until the ceremony
+    today     the clock gives way to "Today's the day"
+    married   the date has passed — "Married"
+  A template outlives its demo date, so a guest must never meet a row of
+  zeros. The interval also stops while the tab is hidden.
+
+  The countdown is a BAND (72px / 20px / 78px, no min-height), matching the
+  sample invite, and uses that sample's own faces -- Italianno, Cinzel and
+  EB Garamond -- held in --cd-* tokens so they reach nothing else.
+
+  assets/countdown-scene.webp (1600px, ~300 KB) is that painting. It is the
+  one image on the page that is a photograph rather than a cut-out, so it
+  carries the weight it needs to stay soft rather than blocky at full bleed.
+
+  The flat-lay is SIZED BY WIDTH, not fitted to the window, and it is
+  FULL-BLEED on a phone and a tablet (--gutter:0) so nothing is lost to side
+  margins. .frame carries NO min-height: forcing a full screen there was what
+  left a phone showing a small collage floating in a band of empty paper. The
+  countdown now follows straight on, and the reader scrolls.
+
+  Capping the stage by window height instead (an earlier attempt) shrank every
+  piece on a laptop to about a third of the window -- do not bring that back.
+
+  Piece POSITIONS are never touched by any of this. They are in canvas units,
+  so changing the stage width scales the whole collage as one object and the
+  layout is identical at every size.
+
+
+THE SECTIONS ARE PAGES
+  Save the Date, Our Story, Wedding Details and RSVP are full pages, not
+  dialogs. Each has its own URL:
+
+    #save-the-date   #our-story   #details   #rsvp
+
+  Routing is off location.hash, so the browser's back button, a bookmark and a
+  shared link all work with no history bookkeeping. A link straight to a
+  section skips the envelope rather than stranding the reader on a cover they
+  did not ask for.
+
+  The state attribute sits on <html>, not on .page, because the sections are
+  SIBLINGS of .page. While one is open, .page is hidden whole -- hiding only
+  its contents still left a blank screen above the section, since .page
+  carries min-height:100dvh.
+
+  Sections snap with `y proximity`, never `mandatory`: on a short window the
+  suite is taller than the viewport and mandatory would fight the reader.
+
+
+THE FLAT-LAY IS THE NAVIGATION
+  Six pieces are doors. Each carries a .piece__hit button with
+  data-opens="<panel id>"; the panels are <dialog> elements below the suite.
+
+    Save-the-Date tag   ->  Save the Date
+    Date banner         ->  Save the Date
+    RSVP tag            ->  RSVP
+    Details card        ->  The Details
+    Monogram card       ->  Our Story
+    Invitation card     ->  Our Story
+
+  To move a door, change data-opens. To add one, put a .piece__hit button in
+  the piece and add .piece--link to the piece's class.
+
+
+>>> THE RSVP FORM IS NOT CONNECTED <<<
+  #rsvp-form has an empty data-endpoint. Until a real endpoint is set, the form
+  REFUSES to submit and says so on screen -- deliberately, because a wedding
+  site that silently swallows replies is worse than one with no form at all.
+
+  Put any endpoint that accepts a POST of form data in data-endpoint
+  (Formspree, Getform, Basin, a Google Form action). Send a test reply and
+  confirm it arrives BEFORE giving the link to guests.
+
+  The "Add to calendar" button on Save the Date is a self-contained .ics data
+  URI -- no service, nothing to configure -- but it carries the date and venue,
+  so update it when those change.
+
+
+THE WEDDING DATE
+  ONE place: data-date on <section class="countdown">, an ISO local datetime
+  (currently 2027-11-27T19:00:00, a Saturday). The clock, the printed "27 . 11 . 27" and
+  the screen-reader line are all derived from it. It counts down and stops at
+  zero -- it never shows a negative number once the day has passed.
+
+
+SWAPPING IN A COUPLE'S DETAILS
+  All of it is live text in the markup -- nothing is baked into an image.
+
+  Cover                .cover__names, .cover__open / .cover__magic
+  Countdown            .countdown__names
+  Wedding date         data-date on #countdown  (see above)
+  Invitation card      .type--invite   names, date, venue
+  Details card         .type--details   the DATE / TIME / VENUE rows
+  Vow tags             .type--vows      "His Vows" / "Her Vows"
+  Monogram             .type--monogram  the two initials
+  Date banner          .type--ribbon
+  Quote strip          .type--quote
+  Name tags            .type--name
+  Browser tab + link previews  <title> and <meta name="description">
+
+  The date appears in FIVE places and they are not wired together: the
+  countdown's data-date, the invitation card, the details card, the banner and
+  the quote-adjacent copy. Change them together.
+
+
+THE PANELS FOLLOW THE DESIGN FILE
+  Three separate token sets, so a change to one cannot reach the others:
+
+    landing page + countdown   --ink-*, --gold-*, --cream-*, --ds-*
+    the four panels            --d-*
+
+  The panels follow the Claude Design file: a gold spaced-caps eyebrow, an
+  Italiana heading, a line-diamond-line divider, then Cormorant body copy set
+  generously -- plus taped polaroids in Our Story and a sprig tile grid in
+  Wedding Details. The flat-lay and the countdown reference no --d-* token at
+  all, which is what keeps them out of it.
+
+  Italiana (assets/fonts/italiana-400.woff2, 10 KB) is self-hosted like the
+  others; the design loaded it from Google Fonts, but nothing here should
+  depend on an external request.
+
+
+HOW TEXT SITS ON A CARD
+  A .type block is a box measured in PERCENTAGES OF ITS OWN PIECE
+  (--tl left, --tt top, --tw width, --th height, --trot rotation), and its
+  font-size is one hundredth of that piece's rendered width. Everything inside
+  is therefore in `em`, so a block set once is correct at every screen size and
+  the words can never drift off their card.
+
+  To reposition text, change --tl/--tt/--tw/--th on the block -- never the
+  font sizes. To check a change, confirm the text still fits at 360px wide and
+  at 1920px: those are the extremes.
+
+
+CANVAS
+  Each breakpoint is its own layout, in canvas units, with --u turning one unit
+  into real pixels. --ch is the CONTENT height, not the device's.
+
+    phone   (<768px)   390 x 515    stage capped 480px
+    tablet  (default)  768 x 1024   stage capped 900px
+    desktop (>=1024px) 768 x 1024   stage capped 1000px
+
+  The stage is capped by WINDOW HEIGHT as well as width, so the whole flat-lay
+  is on screen at once at every size rather than asking anyone to scroll.
+
+
+BEFORE A CUSTOMER PUBLISHES
+  og:image is a RELATIVE path. WhatsApp, Slack and Twitter resolve that fine;
+  Facebook's scraper wants an absolute URL. Once the site has a domain, set
+  og:image to the full https://... address and add an og:url to match.
+
+  assets/og-cover.webp (1200x630) is the link preview -- the first thing a
+  guest sees when the couple sends the link. It is NOT loaded by the page, so
+  it costs nothing at runtime. Regenerate it whenever the names or date change.
+
+  The favicon is an inline SVG data URI in <link rel="icon">, so it is one less
+  request and recolours by editing two hex values.
+
+
+ASSETS
+  assets/*.webp     resized to at most 2x their largest rendered size
+  _source-assets/   the untouched original PNGs — re-run the export from these
+                    if a piece is ever repositioned larger
+
+  Total page weight is ~1.7 MB across 24 requests. It was 40 MB before the
+  originals were resized and converted; keep new pieces in .webp and sized to
+  what they actually render, or that comes straight back.
+
+composition.ts is the tablet layout as TypeScript constants, in the format the
+Next.js invitation site uses in src/data/composition.ts. Its comments still
+name the original source files, not the shortened asset names.

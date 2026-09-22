@@ -1,0 +1,9 @@
+# The untouched original PNGs the shipped assets were exported from.
+# ~41 MB, and nothing serves them — keep them locally, out of the repo.
+_source-assets/
+
+# scratch
+*.tmp
+_t-*.html
+.DS_Store
+Thumbs.db
